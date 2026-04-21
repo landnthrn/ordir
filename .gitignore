@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+*.user
+publish/
+publish-fd/
+dist/
+publish_test_out/
+_build_verify_out/
+_build_verify_out2/
+.cursor/

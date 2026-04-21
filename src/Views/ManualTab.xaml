@@ -1,0 +1,461 @@
+<UserControl x:Class="Ordir.Views.ManualTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:Ordir.Models"
+             mc:Ignorable="d"
+             d:DesignHeight="920" d:DesignWidth="1000"
+             Background="Transparent">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <StackPanel Grid.Row="0" Margin="0,0,0,10">
+      <TextBlock Text="Take action in:" Foreground="{StaticResource Brush.Muted}" Margin="0,0,0,6"/>
+      <StackPanel Orientation="Horizontal">
+        <RadioButton x:Name="ManualModeAllNested" GroupName="ManualScope" Style="{StaticResource ThemedRadio}" Content="All folders inside target folder" Checked="ManualScope_Changed"/>
+        <RadioButton x:Name="ManualModeSubfolders" GroupName="ManualScope" Style="{StaticResource ThemedRadio}" Content="Subfolders of target folder" IsChecked="True" Checked="ManualScope_Changed"/>
+        <RadioButton x:Name="ManualModeTargetOnly" GroupName="ManualScope" Style="{StaticResource ThemedRadio}" Content="Target folder only" Checked="ManualScope_Changed"/>
+      </StackPanel>
+    </StackPanel>
+
+    <Grid Grid.Row="1" Margin="0,0,0,10">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" Text="Target folder" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{StaticResource Brush.Muted}"/>
+      <TextBox x:Name="ManualPathBox" Grid.Column="1" VerticalContentAlignment="Center" Padding="8,6" LostFocus="ManualPathBox_LostFocus"
+               Background="{StaticResource Brush.Surface}" Foreground="{StaticResource Brush.Text}"
+               BorderBrush="{StaticResource Brush.Border}" CaretBrush="{StaticResource Brush.Text}"/>
+      <Button x:Name="ManualBrowseBtn" Grid.Column="2" Content="Browse…" Margin="8,0,0,0" Style="{StaticResource ToolbarButton}" Click="ManualBrowseBtn_Click"/>
+      <Button x:Name="ManualRefreshBtn" Grid.Column="3" Content="Refresh" Margin="8,0,0,0" Style="{StaticResource ToolbarButton}" Click="ManualRefreshBtn_Click"/>
+    </Grid>
+
+    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
+      <TextBlock Text="Sort list by:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource Brush.Muted}"/>
+      <ComboBox x:Name="ManualSortCombo" Width="172" MinWidth="140" MaxWidth="188" VerticalContentAlignment="Center" SelectionChanged="ManualSortCombo_SelectionChanged">
+        <ComboBoxItem Content="Name" IsSelected="True"/>
+        <ComboBoxItem Content="Date modified"/>
+        <ComboBoxItem Content="Size"/>
+        <ComboBoxItem Content="Infotips (if present)"/>
+      </ComboBox>
+      <StackPanel Orientation="Horizontal" Margin="20,0,0,0" VerticalAlignment="Center">
+        <ToggleButton x:Name="ManualShowIniTipsToggle" Style="{StaticResource ThemedOnOffToggle}" IsChecked="True" Checked="ManualShowIniTips_Changed" Unchecked="ManualShowIniTips_Changed" VerticalAlignment="Center"/>
+        <TextBlock Text="Show desktop.ini(s) infotip if present" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Brush.Muted}"/>
+      </StackPanel>
+    </StackPanel>
+
+    <Grid Grid.Row="3" MinHeight="320">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="380" MinWidth="340"/>
+      </Grid.ColumnDefinitions>
+
+      <Border Grid.Column="0" VerticalAlignment="Stretch" Margin="0,0,16,0"
+              Background="{StaticResource Brush.Surface}"
+              BorderBrush="{StaticResource Brush.AccentBlueViolet}"
+              BorderThickness="1" CornerRadius="6" Padding="0">
+        <Grid x:Name="ManualListHostGrid">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <Border Grid.Row="0" Background="#2a2b3c" BorderBrush="{StaticResource Brush.Border}" BorderThickness="0,0,0,1" Padding="6,4">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <ToggleButton x:Name="ManualSelectAllToggle" Style="{StaticResource OrdirRowSelectToggle}" IsChecked="True"
+                              Click="ManualSelectAllToggle_Click" VerticalAlignment="Center"/>
+                <TextBlock Text="Select all" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Brush.Muted}"/>
+              </StackPanel>
+              <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <Button x:Name="ManualListImportBtn" Style="{StaticResource ExplorerIconButton}" Click="ManualListImportBtn_Click" ToolTip="Import list file…">
+                  <Path Data="M7,2 L7,10 M3,6 L7,10 L11,6" Stroke="{StaticResource Brush.Muted}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform" Width="14" Height="14" Fill="Transparent"/>
+                </Button>
+                <Button x:Name="ManualListExportBtn" Margin="4,0,0,0" Style="{StaticResource ExplorerIconButton}" Click="ManualListExportBtn_Click" ToolTip="Export list (current order)">
+                  <Path Data="M7,12 L7,4 M3,6 L7,2 L11,6" Stroke="{StaticResource Brush.Muted}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform" Width="14" Height="14" Fill="Transparent"/>
+                </Button>
+                <Button x:Name="ManualListOpenFolderBtn" Margin="4,0,0,0" Style="{StaticResource ExplorerIconButton}" Click="ManualListOpenFolderBtn_Click" ToolTip="Open lists folder">
+                  <Path Data="M2,5 L7,5 L8,3 L16,3 L16,14 L2,14 Z" Fill="{StaticResource Brush.Muted}" Stretch="Uniform" Width="14" Height="14"/>
+                </Button>
+              </StackPanel>
+            </Grid>
+          </Border>
+          <Grid x:Name="ManualExplorerItemsGrid" Grid.Row="1">
+        <ListBox x:Name="ManualFolderList" Style="{StaticResource FolderListBoxPlain}" ItemContainerStyle="{StaticResource FolderListItemStyle}"
+                 AllowDrop="True"
+                 PreviewMouseLeftButtonDown="ManualFolderList_PreviewMouseLeftButtonDown"
+                 PreviewMouseLeftButtonUp="ManualFolderList_PreviewMouseLeftButtonUp"
+                 LostMouseCapture="ManualFolderList_LostMouseCapture"
+                 MouseMove="ManualFolderList_MouseMove"
+                 DragOver="ManualFolderList_DragOver"
+                 DragLeave="ManualFolderList_DragLeave"
+                 Drop="ManualFolderList_Drop"
+                 SelectionChanged="ManualFolderList_SelectionChanged">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto" MinWidth="8"/>
+                  <ColumnDefinition Width="52"/>
+                  <ColumnDefinition Width="44"/>
+                </Grid.ColumnDefinitions>
+                <ToggleButton Grid.Column="0" Style="{StaticResource OrdirRowSelectToggle}" Margin="0,0,6,0" VerticalAlignment="Center"
+                              IsChecked="{Binding IsIncluded, Mode=TwoWay}" Click="ManualFolderRowIncludeToggle_Click"/>
+                <Viewbox Grid.Column="1" Width="20" Height="16" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center" Opacity="0.55">
+                  <Path Stroke="{StaticResource Brush.Muted}" StrokeThickness="1.2" Fill="Transparent"
+                        Data="M2,6 L9,6 L10,4 L18,4 L18,16 L2,16 Z"/>
+                </Viewbox>
+                <TextBlock Grid.Column="2" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,8,0">
+                  <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                      <Setter Property="Foreground" Value="{StaticResource Brush.Text}"/>
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsExcluded}" Value="True">
+                          <Setter Property="Opacity" Value="0.45"/>
+                          <Setter Property="TextDecorations">
+                            <Setter.Value>
+                              <TextDecorationCollection>
+                                <TextDecoration Location="Strikethrough"/>
+                              </TextDecorationCollection>
+                            </Setter.Value>
+                          </Setter>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </TextBlock.Style>
+                </TextBlock>
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,4,0">
+                  <Border Width="10" Height="10" CornerRadius="5" Margin="0,0,4,0" VerticalAlignment="Center">
+                    <Border.Style>
+                      <Style TargetType="Border">
+                        <Setter Property="Background" Value="{StaticResource Brush.BadgeGreen}"/>
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding ShowBadgeSystem}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Border.Style>
+                  </Border>
+                  <Grid Width="14" Height="10" Margin="0,0,4,0" VerticalAlignment="Center" ClipToBounds="False">
+                    <Grid.Style>
+                      <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding ShowBadgeIni}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Grid.Style>
+                    <Border Grid.ZIndex="0" CornerRadius="2" Background="{StaticResource Brush.BadgeBlue}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    <Path Grid.ZIndex="1" Data="M1.5,5 Q7,2 12.5,5 Q7,8 1.5,5" Stroke="#1E1E2E" StrokeThickness="0.9" Fill="Transparent" Stretch="Fill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,1.5,2,1.5"/>
+                    <Ellipse Grid.ZIndex="1" Width="2.2" Height="2.2" Fill="#1E1E2E" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Path Grid.ZIndex="4" Data="M1.5,1.5 L12.5,8.5 M12.5,1.5 L1.5,8.5" Stretch="Fill" Stroke="#14141f" StrokeThickness="1.85"
+                          SnapsToDevicePixels="True"
+                          Visibility="{Binding IniIsHidden, Converter={StaticResource BoolToVis}}"/>
+                  </Grid>
+                  <Border Width="10" Height="10" CornerRadius="5" Margin="0,0,4,0" VerticalAlignment="Center">
+                    <Border.Style>
+                      <Style TargetType="Border">
+                        <Setter Property="Background" Value="{StaticResource Brush.BadgeViolet}"/>
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding ShowBadgeNoIniNotSystem}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Border.Style>
+                  </Border>
+                  <Border Width="10" Height="10" CornerRadius="5" VerticalAlignment="Center">
+                    <Border.Style>
+                      <Style TargetType="Border">
+                        <Setter Property="Background" Value="{StaticResource Brush.BadgeRed}"/>
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding ShowBadgeMisconfigured}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Border.Style>
+                  </Border>
+                </StackPanel>
+                <TextBlock Grid.Column="4" Text="{Binding OrderColumnCurrentTipText}" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource Brush.OrderColCurrent}" Margin="0,0,2,0">
+                  <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                      <Setter Property="Visibility" Value="Collapsed"/>
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding ShowOrderCurrentTipColumn}" Value="True">
+                          <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Column="5" Text="{Binding OrderColumnNewOrderText}" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource Brush.OrderColNew}" Margin="0,0,2,0"/>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <ListBox x:Name="ManualFolderTreeList" Visibility="Collapsed" Style="{StaticResource FolderListBoxTree}" ItemContainerStyle="{StaticResource FolderListItemStyle}"
+                 AllowDrop="True"
+                 PreviewMouseLeftButtonDown="ManualFolderTreeList_PreviewMouseLeftButtonDown"
+                 PreviewMouseLeftButtonUp="ManualFolderTreeList_PreviewMouseLeftButtonUp"
+                 LostMouseCapture="ManualFolderTreeList_LostMouseCapture"
+                 MouseMove="ManualFolderTreeList_MouseMove"
+                 DragOver="ManualFolderTreeList_DragOver"
+                 DragLeave="ManualFolderTreeList_DragLeave"
+                 Drop="ManualFolderTreeList_Drop"
+                 SelectionChanged="ManualFolderTreeList_SelectionChanged">
+          <ListBox.ItemTemplate>
+            <DataTemplate DataType="{x:Type models:FolderTreeNode}">
+              <Grid MinHeight="26">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="24"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto" MinWidth="8"/>
+                  <ColumnDefinition Width="52"/>
+                  <ColumnDefinition Width="44"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="{Binding TreeDepth, Converter={StaticResource TreeIndentWidth}}"/>
+                <Button Grid.Column="1" Width="20" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Style="{StaticResource OrdirTreeExpandButton}"
+                        ToolTip="Show or hide nested folders"
+                        Visibility="{Binding HasChildren, Converter={StaticResource BoolToVis}}"
+                        Click="ManualFolderTreeExpand_Click" Foreground="{StaticResource Brush.Muted}" FontSize="11"/>
+                <ToggleButton Grid.Column="2" Style="{StaticResource OrdirRowSelectToggle}" Margin="0,0,6,0" VerticalAlignment="Center"
+                              IsChecked="{Binding Row.IsIncluded, Mode=TwoWay}" Click="ManualTreeRowIncludeToggle_Click"/>
+                <Viewbox Grid.Column="3" Width="20" Height="16" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center" Opacity="0.55">
+                  <Path Stroke="{StaticResource Brush.Muted}" StrokeThickness="1.2" Fill="Transparent"
+                        Data="M2,6 L9,6 L10,4 L18,4 L18,16 L2,16 Z"/>
+                </Viewbox>
+                <TextBlock Grid.Column="4" Text="{Binding Row.Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,8,0">
+                  <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                      <Setter Property="Foreground" Value="{StaticResource Brush.Text}"/>
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding Row.IsExcluded}" Value="True">
+                          <Setter Property="Opacity" Value="0.45"/>
+                          <Setter Property="TextDecorations">
+                            <Setter.Value>
+                              <TextDecorationCollection>
+                                <TextDecoration Location="Strikethrough"/>
+                              </TextDecorationCollection>
+                            </Setter.Value>
+                          </Setter>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </TextBlock.Style>
+                </TextBlock>
+                <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,4,0">
+                  <Border Width="10" Height="10" CornerRadius="5" Margin="0,0,4,0" VerticalAlignment="Center">
+                    <Border.Style>
+                      <Style TargetType="Border">
+                        <Setter Property="Background" Value="{StaticResource Brush.BadgeGreen}"/>
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding Row.ShowBadgeSystem}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Border.Style>
+                  </Border>
+                  <Grid Width="14" Height="10" Margin="0,0,4,0" VerticalAlignment="Center" ClipToBounds="False">
+                    <Grid.Style>
+                      <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding Row.ShowBadgeIni}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Grid.Style>
+                    <Border Grid.ZIndex="0" CornerRadius="2" Background="{StaticResource Brush.BadgeBlue}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    <Path Grid.ZIndex="1" Data="M1.5,5 Q7,2 12.5,5 Q7,8 1.5,5" Stroke="#1E1E2E" StrokeThickness="0.9" Fill="Transparent" Stretch="Fill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,1.5,2,1.5"/>
+                    <Ellipse Grid.ZIndex="1" Width="2.2" Height="2.2" Fill="#1E1E2E" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Path Grid.ZIndex="4" Data="M1.5,1.5 L12.5,8.5 M12.5,1.5 L1.5,8.5" Stretch="Fill" Stroke="#14141f" StrokeThickness="1.85"
+                          SnapsToDevicePixels="True"
+                          Visibility="{Binding Row.IniIsHidden, Converter={StaticResource BoolToVis}}"/>
+                  </Grid>
+                  <Border Width="10" Height="10" CornerRadius="5" Margin="0,0,4,0" VerticalAlignment="Center">
+                    <Border.Style>
+                      <Style TargetType="Border">
+                        <Setter Property="Background" Value="{StaticResource Brush.BadgeViolet}"/>
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding Row.ShowBadgeNoIniNotSystem}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Border.Style>
+                  </Border>
+                  <Border Width="10" Height="10" CornerRadius="5" VerticalAlignment="Center">
+                    <Border.Style>
+                      <Style TargetType="Border">
+                        <Setter Property="Background" Value="{StaticResource Brush.BadgeRed}"/>
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding Row.ShowBadgeMisconfigured}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Border.Style>
+                  </Border>
+                </StackPanel>
+                <TextBlock Grid.Column="6" Text="{Binding Row.OrderColumnCurrentTipText}" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource Brush.OrderColCurrent}" Margin="0,0,2,0">
+                  <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                      <Setter Property="Visibility" Value="Collapsed"/>
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding Row.ShowOrderCurrentTipColumn}" Value="True">
+                          <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Column="7" Text="{Binding Row.OrderColumnNewOrderText}" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource Brush.OrderColNew}" Margin="0,0,2,0"/>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Border x:Name="ManualDropInsertLine" Height="2" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="8,0,8,0"
+                Background="{StaticResource Brush.AccentBlueViolet}" CornerRadius="1" Visibility="Collapsed"
+                IsHitTestVisible="False" SnapsToDevicePixels="True"/>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="1" VerticalAlignment="Stretch" Background="{StaticResource Brush.Surface}" BorderBrush="{StaticResource Brush.Border}"
+              BorderThickness="1" Padding="0" CornerRadius="6">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="12">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" MinHeight="226"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="2*"/>
+              <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+              <TextBlock Text="Information" FontWeight="SemiBold" Foreground="{StaticResource Brush.SectionTitle}" Margin="0,0,0,4"/>
+              <TextBox x:Name="ManualSummaryInfoBlock" TextWrapping="Wrap" Foreground="{StaticResource Brush.Muted}" FontSize="12" MinHeight="72"
+                       IsReadOnly="True" IsTabStop="False" BorderThickness="0" Background="Transparent" Padding="0" Cursor="IBeam"/>
+              <TextBlock Text="Selected Folder Info" FontWeight="SemiBold" Foreground="{StaticResource Brush.SectionTitle}" Margin="0,12,0,4"/>
+              <TextBox x:Name="ManualSummarySelectedBlock" TextWrapping="Wrap" Foreground="{StaticResource Brush.Muted}" FontSize="12" MinHeight="86"
+                       IsReadOnly="True" IsTabStop="False" BorderThickness="0" Background="Transparent" Padding="0" Cursor="IBeam"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+              <TextBlock Text="See Changes" FontWeight="SemiBold" Foreground="{StaticResource Brush.SectionTitle}" Margin="0,0,0,4"/>
+              <TextBox TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource Brush.Muted}" Margin="0,0,0,0" MinHeight="120"
+                       IsReadOnly="True" IsTabStop="False" BorderThickness="0" Background="Transparent" Padding="0" Cursor="IBeam"
+                       Text="In File Explorer of Folder:&#x0a;- Right click empty space &gt; Sort by &gt; More... (If on Windows 11, use Show more options)&#x0a;- Check Comments&#x0a;- Right click empty space &gt; Sort by &gt; Comments&#x0a;- Right click &gt; Refresh&#x0a;&#x0a;If you don't see changes:&#x0a;- Open Task Manager&#x0a;- Right click the task Windows Explorer &gt; Restart"/>
+            </StackPanel>
+          </Grid>
+          <StackPanel Grid.Row="1" Margin="0,0,0,12">
+            <Separator Margin="0,15,0,15" Background="{StaticResource Brush.Border}"/>
+            <TextBlock Text="Legend" FontWeight="SemiBold" Margin="0,0,0,6" Foreground="{StaticResource Brush.SectionTitle}"/>
+            <StackPanel TextElement.FontSize="11" TextElement.Foreground="{StaticResource Brush.Muted}">
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <Border Width="10" Height="10" CornerRadius="5" Background="{StaticResource Brush.BadgeGreen}" Margin="0,2,8,0" VerticalAlignment="Top"/>
+                <TextBlock TextWrapping="Wrap" MinWidth="280" Text="System folder"/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <Grid Width="14" Height="10" Margin="0,2,6,0" VerticalAlignment="Top" ClipToBounds="False">
+                  <Border CornerRadius="2" Background="{StaticResource Brush.BadgeBlue}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                  <Path Data="M1.5,5 Q7,2 12.5,5 Q7,8 1.5,5" Stroke="#1E1E2E" StrokeThickness="0.9" Fill="Transparent" Stretch="Fill" Margin="2,1.5,2,1.5"/>
+                  <Ellipse Width="2.2" Height="2.2" Fill="#1E1E2E" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+                <Grid Width="14" Height="10" Margin="0,2,6,0" VerticalAlignment="Top" ClipToBounds="False">
+                  <Border CornerRadius="2" Background="{StaticResource Brush.BadgeBlue}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                  <Path Data="M1.5,5 Q7,2 12.5,5 Q7,8 1.5,5" Stroke="#1E1E2E" StrokeThickness="0.9" Fill="Transparent" Stretch="Fill" Margin="2,1.5,2,1.5"/>
+                  <Ellipse Width="2.2" Height="2.2" Fill="#1E1E2E" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                  <Path Data="M1.5,1.5 L12.5,8.5 M12.5,1.5 L1.5,8.5" Stretch="Fill" Stroke="#14141f" StrokeThickness="1.85" SnapsToDevicePixels="True"/>
+                </Grid>
+                <TextBlock TextWrapping="Wrap" MinWidth="240" VerticalAlignment="Center"
+                           Text="Has a desktop.ini file, if hidden or not"/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <Border Width="10" Height="10" CornerRadius="5" Background="{StaticResource Brush.BadgeViolet}" Margin="0,2,8,0" VerticalAlignment="Top"/>
+                <TextBlock TextWrapping="Wrap" MinWidth="280" Text="No desktop.ini, not a system folder"/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <Border Width="10" Height="10" CornerRadius="5" Background="{StaticResource Brush.BadgeRed}" Margin="0,2,8,0" VerticalAlignment="Top"/>
+                <TextBlock TextWrapping="Wrap" MinWidth="280" Text="Misconfigured desktop.ini detected"/>
+              </StackPanel>
+              <TextBlock FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6">
+                <Run Text="##  " Foreground="{StaticResource Brush.Muted}"/>
+                <Run Text="Current desktop.ini's infotip if present" Foreground="{StaticResource Brush.Muted}"/>
+              </TextBlock>
+              <TextBlock FontSize="11" TextWrapping="Wrap">
+                <Run Text="##  " Foreground="{StaticResource Brush.OrderColNew}"/>
+                <Run Text="New order" Foreground="{StaticResource Brush.Muted}"/>
+              </TextBlock>
+            </StackPanel>
+          </StackPanel>
+        </Grid>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+
+    <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,10,0,10">
+      <Button x:Name="BtnCreateIni" Margin="0,0,6,0" Style="{StaticResource ToolbarButton}" Content="Create desktop.ini(s)" Click="ManualActionSelect_Click" Tag="CreateIni"/>
+      <Button x:Name="BtnDeleteIni" Margin="0,0,6,0" Style="{StaticResource ToolbarButton}" Content="Delete .ini(s)" Click="ManualActionSelect_Click" Tag="DeleteIni"/>
+      <Button x:Name="BtnMakeSystem" Margin="0,0,6,0" Style="{StaticResource ToolbarButton}" Content="Make system folder(s)" Click="ManualActionSelect_Click" Tag="MakeSystem"/>
+      <Button x:Name="BtnUndoSystem" Margin="0,0,6,0" Style="{StaticResource ToolbarButton}" Content="Undo system folder(s)" Click="ManualActionSelect_Click" Tag="UndoSystem"/>
+      <Button x:Name="BtnHideIni" Margin="0,0,6,0" Style="{StaticResource ToolbarButton}" Content="Hide .ini(s)" Click="ManualActionSelect_Click" Tag="HideIni"/>
+      <Button x:Name="BtnUnhideIni" Margin="0,0,6,0" Style="{StaticResource ToolbarButton}" Content="Unhide .ini(s)" Click="ManualActionSelect_Click" Tag="UnhideIni"/>
+      <Button x:Name="BtnNormalizeFolders" Margin="0,0,6,0" Style="{StaticResource ToolbarButton}" Content="Normalize folder(s)" Click="ManualActionSelect_Click" Tag="Normalize" ToolTip="Remove desktop.ini (if any) and clear system-folder marking for included folders in this scope. Select this, then Apply."/>
+      <Button x:Name="ManualApplyActionBtn" Padding="20,10" Style="{StaticResource OrdirPrimaryButton}" Content="Apply" Click="ManualApplyActionBtn_Click" ToolTip="Run the selected action"/>
+    </StackPanel>
+
+    <DockPanel Grid.Row="5" LastChildFill="True">
+      <Button x:Name="ManualApplyOrderBtn" DockPanel.Dock="Right" Content="Apply order" Padding="20,10" FontSize="13" FontWeight="SemiBold"
+              VerticalAlignment="Bottom" Margin="14,0,0,0" Style="{StaticResource OrdirPrimaryButton}" Click="ManualApplyOrderBtn_Click"/>
+      <Border Style="{StaticResource OrdirActivityLogHost}" Background="#11111b" BorderBrush="{StaticResource Brush.Border}" BorderThickness="1" CornerRadius="4">
+        <DockPanel LastChildFill="True">
+          <TextBox x:Name="ManualLastRunSummaryBlock" DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="{StaticResource Brush.Muted}" FontSize="11" Margin="6,6,6,4"
+                   IsReadOnly="True" IsTabStop="False" BorderThickness="0" Background="Transparent" Padding="0" Cursor="IBeam"/>
+          <ScrollViewer x:Name="ManualActivityLogScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="4" Background="#11111b">
+            <RichTextBox x:Name="ManualActivityLog" FontFamily="Consolas" FontSize="11" IsReadOnly="True" IsUndoEnabled="False"
+                         BorderThickness="0" Background="Transparent" Padding="0" Cursor="IBeam"
+                         HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+          </ScrollViewer>
+        </DockPanel>
+      </Border>
+    </DockPanel>
+  </Grid>
+</UserControl>

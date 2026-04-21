@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Win10+ only (matches app.manifest). Avoids net8.0-windows7.0 restore moniker / odd runtime-pack resolution on some setups. -->
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Ordir</RootNamespace>
+    <AssemblyName>Ordir</AssemblyName>
+    <Version>2.0.0</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <ApplicationTitle>Ordir</ApplicationTitle>
+    <!-- Shell / shortcuts use the best matching size inside the .ico; PNG→ICO converters often emit only 16/32 px — add 48 and 256 px layers for sharp large icons. -->
+    <ApplicationIcon>Assets\ordir-logo-1.ico</ApplicationIcon>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <!-- WPF + WinForms: SDK injects global System.Windows.Forms and collides with WPF (MessageBox, DragDrop*, etc.). -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\*.png" />
+    <Resource Include="Assets\ordir-logo-1.ico" />
+    <Resource Include="..\..\creation-zone-files\About-section.txt" Link="Assets\About-section.txt" />
+  </ItemGroup>
+
+</Project>
