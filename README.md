@@ -13,7 +13,7 @@ Your configuration transfers wherever you move an organized folder, even to othe
 
 ## How it works
 
-Ordir uses a fairly unknown method via hidden `desktop.ini` files, infotips, and sorting by **Comments** in Explorer—think of it as giving folders metadata and sorting by it.
+Ordir uses a fairly unknown method via hidden `desktop.ini` files, infotips, and sorting by **Comments** in Explorer. Think of it like giving folders metadata and sorting by it.
 
 #### Input Process:
 
