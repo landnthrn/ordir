@@ -33,13 +33,13 @@ Think of it like giving folders metadata and sorting by it.
 
 # Install Options
 
-For full install options info see [docs/install-options-guide.md#install-or-build-ordir](docs/install-options-guide.md#install-or-build-ordir)
+For full install options info see **[install-options-guide.md](docs/install-options-guide.md#install-or-build-ordir)**
 
 ### 1. Installer 
 
 - Download the installer `.exe` from **Releases** and run it. Installs to `Program Files` 
 
-- If you want to use [quick launch](#quick-launch-from-any-folder), check `Install 'ordir' command to user PATH` during install
+- If you want to use **[quick launch](#quick-launch-from-any-folder)**, check `Install 'ordir' command to user PATH` during install
 
 
 ### 2. Portable
@@ -59,7 +59,7 @@ For full install options info see [docs/install-options-guide.md#install-or-buil
     dotnet build Ordir.sln -c Release
 
 #### Full instructions:  
-[docs/install-options-guide.md#build](docs/install-options-guide.md#build)
+**[install-options-guide.md](docs/install-options-guide.md#build)**
 
 ---
 
@@ -108,9 +108,9 @@ Luckily this setup gives folders the ability to add custom thumbnails from image
 Sometimes Windows may partically reset some thumbnail cache. 
 It's recommended to apply the following cache tweak before setting custom thumbnails or sorting by comments.
 
-- [Stop Windows From Deleting Thumbnail Cache (Win 10/11)](https://winaero.com/windows-10-deleting-thumbnail-cache/)
+- **[Stop Windows From Deleting Thumbnail Cache (Win 10/11)](https://winaero.com/windows-10-deleting-thumbnail-cache/)**
 - *(If you want this also)*  
-  [How to Increase Number of Folder Views to Remember (Win 10/11)](https://winaero.com/change-number-of-folder-views-to-remember-in-windows-10/)
+  **[How to Increase Number of Folder Views to Remember (Win 10/11)](https://winaero.com/change-number-of-folder-views-to-remember-in-windows-10/)**
 
 After applying a tweak, restart **Windows Explorer** from Task Manager.
 
