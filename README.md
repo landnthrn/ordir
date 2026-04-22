@@ -1,8 +1,8 @@
 # Ordir
 
-A handy Windows app for quickly organizing File Explorer folders in any order you please. Say goodbye to the gut-wrenching mess of folder name ordering by A–Z or numbers.
+A handy Windows app for quickly organizing File Explorer folders in any order you please. Say goodbye to the gut-wrenching mess of folder name ordering by A–Z or numbers. It also adds custom folder thumbnails.
 
-Your configuration transfers wherever you move an organized folder, even to other drives. Save a custom setup as lists, or for bulk operations export lists, feed them to an AI to organize, import a revised list, and apply.
+Your configuration transfers wherever you move an organized folder, even to other drives. Save custom setups, or for bulk operations export lists, feed them to an AI to organize, import a revised list, and apply.
 
 Ordir uses a fairly unknown method via hidden `desktop.ini` files, infotips, and sorting by **Comments** in Explorer—think of it as giving folders metadata and sorting by it.
 
@@ -17,7 +17,7 @@ Ordir uses a fairly unknown method via hidden `desktop.ini` files, infotips, and
 
 **Apply process**
 
-- Creates hidden `desktop.ini` file(s) in each folder  
+- Creates `desktop.ini` file(s) in each folder  
 - Inserts infotip(s) (order number) into those `desktop.ini` file(s)  
 - Makes folders into system folder(s)  
 - Hides `desktop.ini` file(s)  
@@ -29,11 +29,11 @@ Ordir uses a fairly unknown method via hidden `desktop.ini` files, infotips, and
 **In File Explorer for that folder**
 
 - Right-click empty space → **Sort by** → **More…** (on Windows 11, use **Show more options** if needed)  
-- Turn on **Comments**  
+- Check **Comments** → **OK**  
 - Right-click empty space → **Sort by** → **Comments**  
 - Right-click → **Refresh**  
 
-Sometimes it takes a bit of refreshing for Explorer to catch up.
+Sometimes it takes some play to refresh properly in Explorer.
 
 **If you do not see changes**
 
@@ -42,38 +42,50 @@ Sometimes it takes a bit of refreshing for Explorer to catch up.
 
 ---
 
-## Quick launch from any folder (`ordir`)
+## How to set custom thumbnails
 
-You can launch Ordir from the folder you are organizing inside File Explorer:
+Once folders have been applied, you may notice file and gear icons as thumbnails while viewing folders by large icons. This setup also lets you add custom thumbnails from image files.
 
-- Clear the address bar, type `cmd /k ordir`, press Enter  
+- Right-click a folder → **Properties** → **Customize** → **Choose File…**  
+- Select an image (most formats are supported) → **Apply** → **OK**  
 
-If you used the installer and enabled PATH integration, that is set up for you. For portable installs or your own builds, add the `cli-launch` folder to your user **PATH**:
+**Strong tip:** Point thumbnails at image files you do not plan to move or rename, or the folder thumbnail path can break—you could use a dedicated “thumbnail bin” folder to keep paths stable.
 
-- In this repo or your install folder, open `scripts\cli-launch` (under the app root)  
-- Copy that folder’s path  
-- Windows search → **Environment variables** → **User** variables → **Path** → **Edit** → **New** → paste the path → OK out  
+### Disclaimer
+
+Sometimes Windows may partially reset thumbnail cache. Do the fix below **before** setting custom folder thumbnails/icons or sorting by comments.
+
+## Recommendation
+
+Install the `.reg` from [Winaero Tweaker](https://winaero.com/) (well-regarded for years). You can use the article download for just the registry file, or install Tweaker and browse their other Windows tweaks.
+
+- [Stop Windows From Deleting Thumbnail Cache.reg (Win 10/11)](https://winaero.com/windows-10-deleting-thumbnail-cache/)  
+- (Optional) [How to increase number of folder views to remember (Win 10/11)](https://winaero.com/change-number-of-folder-views-to-remember-in-windows-10/)  
+
+Do **not** install the “restore defaults” `.reg` unless you intend to uninstall the tweak.
+
+After installing the `.reg`, open Task Manager → **Windows Explorer** → right-click → **Restart**.
+
+You may notice File Explorer’s window size and sort options reset once; that is why applying this before thumbnails and **Comments** sorting is strongly suggested.
 
 ---
 
-## How to set custom thumbnails
+## Quick launch from any folder (`ordir`)
 
-While viewing organized folders by large icons, you may notice file/gear icons as thumbnails. This setup also allows custom folder thumbnails from image files.
+You can launch Ordir from any folder you want inside File Explorer:
 
-- Right-click folder -> **Properties** -> **Customize** -> **Choose File...**
-- Pick an image and click **Apply** -> **OK**
+- In the folder you want to organize, clear the address bar  
+- Type `cmd /k ordir`, press Enter  
 
-## Disclaimer
+If you checked **Install to path** on the installer, you can do this automatically.
 
-Windows can sometimes partially reset thumbnail cache. It is recommended to apply the cache tweak before relying on custom thumbnails and sorting by comments.
+If you are building or using portable, set up quick launch manually:
 
-Recommended:
-- [Stop Windows From Deleting Thumbnail Cache (Win 10/11)](https://winaero.com/windows-10-deleting-thumbnail-cache/)
-- [How to Increase Number of Folder Views to Remember (Win 10/11)](https://winaero.com/change-number-of-folder-views-to-remember-in-windows-10/)
-
-After applying a tweak, restart **Windows Explorer** from Task Manager.
-
-**Extra tip:** Use image files for thumbnails that you do not move or rename.
+- Navigate to `Ordir\scripts\cli-launch` (under the app root, or the same path in this repo)  
+- Copy that folder’s path  
+- Windows search → **Environment variables** → open **Environment variables** again if System Properties appears first  
+- Under **User** variables, select **Path** → **Edit** → **New** → paste the `cli-launch` path (or a directory of shims you use) → OK out  
+- In `cli-launch`, edit `ordir.bat` and set the path to `Ordir.exe` to match where your build or install lives  
 
 ---
 

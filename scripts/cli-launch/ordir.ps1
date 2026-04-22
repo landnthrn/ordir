@@ -10,6 +10,39 @@ try {
 } catch {
 }
 
+function Set-OrdirV1ConsoleLayout {
+    if ($null -eq $Host.UI -or $null -eq $Host.UI.RawUI) { return }
+    try {
+        $raw = $Host.UI.RawUI
+        $tw = [Math]::Min(120, [int]$raw.MaxWindowSize.Width)
+        $th = [Math]::Min(81, [int]$raw.MaxWindowSize.Height)
+        $bw = $raw.BufferSize.Width
+        $bh = $raw.BufferSize.Height
+        $ww = $raw.WindowSize.Width
+        $wh = $raw.WindowSize.Height
+        if ($bw -eq 120 -and $bh -ge 9999 -and $ww -eq $tw -and $wh -eq $th) { return }
+
+        $b = $raw.BufferSize
+        if ($b.Width -lt 120) { $b.Width = 120 }
+        if ($b.Height -lt $th) { $b.Height = $th }
+        $raw.BufferSize = $b
+        $w = $raw.WindowSize
+        $w.Width = $tw
+        $w.Height = $th
+        $raw.WindowSize = $w
+        $b = $raw.BufferSize
+        $b.Height = 9999
+        $raw.BufferSize = $b
+        $w = $raw.WindowSize
+        $w.Width = $tw
+        $w.Height = $th
+        $raw.WindowSize = $w
+    } catch {
+    }
+}
+
+Set-OrdirV1ConsoleLayout
+
 # ============================================================================
 # GLOBAL VARIABLES
 # ============================================================================
@@ -21,6 +54,7 @@ $script:SessionListPath = $null
 # ============================================================================
 
 function Show-MainMenu {
+    Set-OrdirV1ConsoleLayout
     # Call the batch file to display the menu with proper encoding and colors
     $batPath = Join-Path $PSScriptRoot "ShowMenu.bat"
     & $batPath
@@ -33,6 +67,7 @@ function Show-MainMenu {
 
 
 function Show-ManualMenu {
+    Set-OrdirV1ConsoleLayout
     # Call the batch file to display the manual menu with proper encoding and colors
     $batPath = Join-Path $PSScriptRoot "ShowManualMenu.bat"
     & $batPath
@@ -1718,6 +1753,7 @@ function Start-OrganizeFolders {
             "cat7op2" { Invoke-Cat7Op2 }
             
             "info" {
+                Set-OrdirV1ConsoleLayout
                 # Call the batch file to display the info with proper encoding and colors
                 $batPath = Join-Path $PSScriptRoot "ShowInfo.bat"
                 & $batPath

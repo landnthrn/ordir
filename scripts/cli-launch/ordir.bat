@@ -1,6 +1,8 @@
 @echo off
+rem Set console size before chcp/color so the window does not briefly open at default height
+mode con: cols=120 lines=35 >nul 2>&1
 chcp 65001 >nul
-setlocal enabledelayedexpansion
+setlocal
 color 0D
 
 echo.
@@ -49,28 +51,21 @@ goto :launch
 
 :launch
 set "SCRIPT_DIR=%~dp0"
-set "EXE_PATH=%SCRIPT_DIR%..\..\Ordir.exe"
+rem Folder Ordir should open: current directory when the launcher runs, or first argument if given
+set "TARGET_PATH=%CD%"
+if not "%~1"=="" set "TARGET_PATH=%~1"
 
-if not exist "%EXE_PATH%" (
-  set "EXE_PATH=%SCRIPT_DIR%Ordir.exe"
-)
-if not exist "%EXE_PATH%" (
-  set "EXE_PATH=%SCRIPT_DIR%..\..\publish\Ordir.exe"
-)
-if not exist "%EXE_PATH%" (
-  set "EXE_PATH=%SCRIPT_DIR%..\..\src\bin\Debug\net8.0-windows10.0.17763.0\Ordir.exe"
-)
-if not exist "%EXE_PATH%" (
-  set "EXE_PATH=%SCRIPT_DIR%..\..\src\bin\Release\net8.0-windows10.0.17763.0\Ordir.exe"
-)
+rem Single-line fallbacks so each "if not exist" sees the latest EXE_PATH (blocks can misparse in cmd).
+set "EXE_PATH=%SCRIPT_DIR%..\..\Ordir.exe"
+if not exist "%EXE_PATH%" set "EXE_PATH=%SCRIPT_DIR%Ordir.exe"
+if not exist "%EXE_PATH%" set "EXE_PATH=%SCRIPT_DIR%..\..\publish\Ordir.exe"
+if not exist "%EXE_PATH%" set "EXE_PATH=%SCRIPT_DIR%..\..\src\bin\Debug\net8.0-windows10.0.17763.0\Ordir.exe"
+if not exist "%EXE_PATH%" set "EXE_PATH=%SCRIPT_DIR%..\..\src\bin\Release\net8.0-windows10.0.17763.0\Ordir.exe"
 
 if not exist "%EXE_PATH%" (
   echo ERROR: Ordir.exe was not found. Reinstall Ordir, or update this launcher path.
   exit /b 1
 )
-
-set "TARGET_PATH=%CD%"
-if not "%~1"=="" set "TARGET_PATH=%~1"
 
 start "" "%EXE_PATH%" "%TARGET_PATH%"
 timeout /t 2 /nobreak >nul

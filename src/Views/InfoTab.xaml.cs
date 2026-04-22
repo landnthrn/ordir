@@ -198,7 +198,8 @@ public partial class InfoTab : UserControl
                         Foreground = r.Foreground,
                         FontSize = r.FontSize,
                         FontWeight = r.FontWeight,
-                        FontFamily = r.FontFamily
+                        FontFamily = r.FontFamily,
+                        FontStyle = r.FontStyle
                     });
                     break;
                 case LineBreak:
@@ -745,7 +746,7 @@ public partial class InfoTab : UserControl
         return true;
     }
 
-    /// <summary>Renders simple markdown inline syntax: `code` and [title](url).</summary>
+    /// <summary>Renders simple markdown inline syntax: `code` (shown as 'code' in this UI) and [title](url).</summary>
     private static void AppendMarkdownInlines(
         InlineCollection inlines,
         string segment,
@@ -843,7 +844,9 @@ public partial class InfoTab : UserControl
             }
             else
             {
-                inlines.Add(new Run(next.Groups[1].Value) { Foreground = defaultFg });
+                // About-section uses backticks for paths/names; show them as visible single-quoted text in the Info UI only.
+                var inner = next.Groups[1].Value;
+                inlines.Add(new Run("'" + inner + "'") { Foreground = defaultFg });
             }
 
             idx = next.Index + next.Length;

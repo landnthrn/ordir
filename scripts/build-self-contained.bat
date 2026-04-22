@@ -5,7 +5,7 @@ cd /d "%ROOT%"
 if errorlevel 1 exit /b 1
 
 rem Publishing directly to a folder under the repo can hit MSB3094 when the repo path
-rem contains an apostrophe (e.g. Users\...\lando's pc\...). Stage to a neutral path first.
+rem contains an apostrophe (e.g. C:\Users\Somebody's PC\repo). Stage to a neutral path first.
 set "STAGE=%ProgramData%\OrdirPublishStaging"
 echo Publishing self-contained (staging to "%STAGE%" then mirroring to publish\) ...
 if exist "%STAGE%" rmdir /s /q "%STAGE%"
@@ -28,6 +28,7 @@ if errorlevel 8 (
 rmdir /s /q "%STAGE%" 2>nul
 
 echo.
-echo Done. Run:   publish\Ordir.exe
-echo Or:        scripts\Run-Published.bat
+echo Published to publish\ - quick test:
+echo   publish\Ordir.exe
+echo   Alternatively: scripts\Run-Published.bat
 endlocal
