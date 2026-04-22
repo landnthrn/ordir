@@ -27,7 +27,7 @@
   <ItemGroup>
     <Resource Include="Assets\*.png" />
     <Resource Include="Assets\ordir-logo-1.ico" />
-    <Resource Include="..\..\creation-zone-files\About-section.txt" Link="Assets\About-section.txt" />
+    <Resource Include="Assets\info-page.md" />
   </ItemGroup>
 
 </Project>

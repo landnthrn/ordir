@@ -1,0 +1,6 @@
+root = true
+
+# cmd.exe reads UTF-8 batch sources reliably when the file has a UTF-8 BOM (see scripts/cli-launch/ordir.bat).
+[scripts/cli-launch/*.bat]
+charset = utf-8-bom
+end_of_line = crlf

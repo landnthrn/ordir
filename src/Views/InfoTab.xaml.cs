@@ -21,6 +21,17 @@ public partial class InfoTab : UserControl
     private static readonly Regex InlineCodeRegex = new(@"`([^`]+)`", RegexOptions.Compiled);
     private static readonly Regex MarkdownLinkRegex = new(@"\[(?<text>[^\]]+)\]\((?<url>https?://[^)\s]+)\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex ParentheticalRegex = new(@"\([^()\r\n]+\)", RegexOptions.Compiled);
+    private static readonly Regex BoldRegex = new(@"\*\*((?:[^*]|\*(?!\*))+?)\*\*", RegexOptions.Compiled);
+    // Single-asterisk emphasis only: opening * must not be **, closing * must not be part of **.
+    private static readonly Regex ItalicAsteriskRegex = new(@"(?<!\*)\*(?!\*)([^*\n]+?)(?<!\*)\*(?!\*)", RegexOptions.Compiled);
+
+    private enum MdInlineKind
+    {
+        Link,
+        Code,
+        Bold,
+        Italic
+    }
 
     /// <summary>Image filenames to try, in order: Buy Me a Coffee, GitHub, Discord (left to right).</summary>
     private static readonly string[][] PromoImageCandidates =
@@ -100,9 +111,9 @@ public partial class InfoTab : UserControl
         string raw;
         try
         {
-            const string aboutUri = "pack://application:,,,/Ordir;component/Assets/About-section.txt";
+            const string aboutUri = "pack://application:,,,/Ordir;component/Assets/info-page.md";
             var sri = Application.GetResourceStream(new Uri(aboutUri, UriKind.Absolute))
-                      ?? throw new IOException("Missing embedded About-section.txt resource.");
+                      ?? throw new IOException("Missing embedded info-page.md resource.");
             using var reader = new StreamReader(sri.Stream, Encoding.UTF8);
             raw = reader.ReadToEnd();
         }
@@ -156,6 +167,69 @@ public partial class InfoTab : UserControl
         }
     }
 
+    private static void CopyInlinesRecursively(InlineCollection source, InlineCollection dest)
+    {
+        foreach (var il in source.ToList())
+        {
+            switch (il)
+            {
+                case Run r:
+                    dest.Add(new Run(r.Text)
+                    {
+                        Foreground = r.Foreground,
+                        FontSize = r.FontSize,
+                        FontWeight = r.FontWeight,
+                        FontStyle = r.FontStyle,
+                        FontFamily = r.FontFamily
+                    });
+                    break;
+                case LineBreak:
+                    dest.Add(new LineBreak());
+                    break;
+                case Hyperlink h:
+                    dest.Add(CloneHyperlink(h));
+                    break;
+                case Span sp:
+                {
+                    var ns = new Span
+                    {
+                        Foreground = sp.Foreground,
+                        FontWeight = sp.FontWeight,
+                        FontStyle = sp.FontStyle
+                    };
+                    CopyInlinesRecursively(sp.Inlines, ns.Inlines);
+                    dest.Add(ns);
+                    break;
+                }
+            }
+        }
+    }
+
+    private static Hyperlink CloneHyperlink(Hyperlink h)
+    {
+        var nh = new Hyperlink
+        {
+            Foreground = h.Foreground,
+            NavigateUri = h.NavigateUri
+        };
+        CopyInlinesRecursively(h.Inlines, nh.Inlines);
+        nh.RequestNavigate += (_, e) =>
+        {
+            try
+            {
+                if (e.Uri != null)
+                    Process.Start(new ProcessStartInfo { FileName = e.Uri.AbsoluteUri, UseShellExecute = true });
+            }
+            catch
+            {
+                // ignore
+            }
+
+            e.Handled = true;
+        };
+        return nh;
+    }
+
     private static Paragraph ParagraphFromTextBlock(TextBlock tb)
     {
         // FlowDocument Paragraph.Margin does not allow negative components (throws ArgumentException).
@@ -206,35 +280,18 @@ public partial class InfoTab : UserControl
                     p.Inlines.Add(new LineBreak());
                     break;
                 case Hyperlink h:
+                    p.Inlines.Add(CloneHyperlink(h));
+                    break;
+                case Span sp:
                 {
-                    var label = string.Concat(h.Inlines.OfType<Run>().Select(r => r.Text));
-                    if (string.IsNullOrEmpty(label))
-                        label = h.NavigateUri?.ToString() ?? string.Empty;
-                    var nh = new Hyperlink
+                    var ns = new Span
                     {
-                        Foreground = h.Foreground,
-                        NavigateUri = h.NavigateUri
+                        Foreground = sp.Foreground,
+                        FontWeight = sp.FontWeight,
+                        FontStyle = sp.FontStyle
                     };
-                    AddBracketAwareRuns(
-                        nh.Inlines,
-                        label,
-                        h.Foreground ?? ((MediaBrush?)Application.Current?.TryFindResource("Brush.AccentBlueViolet")
-                            ?? new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x7B, 0x7F, 0xD8))));
-                    nh.RequestNavigate += (_, e) =>
-                    {
-                        try
-                        {
-                            if (e.Uri != null)
-                                Process.Start(new ProcessStartInfo { FileName = e.Uri.AbsoluteUri, UseShellExecute = true });
-                        }
-                        catch
-                        {
-                            // ignore
-                        }
-
-                        e.Handled = true;
-                    };
-                    p.Inlines.Add(nh);
+                    CopyInlinesRecursively(sp.Inlines, ns.Inlines);
+                    p.Inlines.Add(ns);
                     break;
                 }
             }
@@ -437,22 +494,6 @@ public partial class InfoTab : UserControl
                 continue;
             }
 
-            if (IsSectionLabelLine(t))
-            {
-                lastYieldedParagraph = false;
-                yield return new TextBlock
-                {
-                    Text = t,
-                    FontSize = 16,
-                    FontWeight = FontWeights.SemiBold,
-                    Foreground = sectionTitle,
-                    Margin = new Thickness(0, 8, 0, 4),
-                    TextWrapping = TextWrapping.Wrap
-                };
-                i++;
-                continue;
-            }
-
             if (TryBuildUrlLine(t, muted, out var linkBlock))
             {
                 lastYieldedParagraph = false;
@@ -565,7 +606,10 @@ public partial class InfoTab : UserControl
 
             if (t.StartsWith("my buymeacoffee ", StringComparison.OrdinalIgnoreCase) ||
                 t.StartsWith("my github ", StringComparison.OrdinalIgnoreCase) ||
-                t.StartsWith("my discord ", StringComparison.OrdinalIgnoreCase))
+                t.StartsWith("my discord ", StringComparison.OrdinalIgnoreCase) ||
+                t.StartsWith("Buy Me a Coffee Button ", StringComparison.OrdinalIgnoreCase) ||
+                t.StartsWith("GitHub Button ", StringComparison.OrdinalIgnoreCase) ||
+                t.StartsWith("Discord Button ", StringComparison.OrdinalIgnoreCase))
             {
                 i++;
                 continue;
@@ -702,13 +746,6 @@ public partial class InfoTab : UserControl
         t.Contains("when i use mardown", StringComparison.OrdinalIgnoreCase) ||
         t.Contains("put the order-title", StringComparison.OrdinalIgnoreCase);
 
-    private static bool IsSectionLabelLine(string t) =>
-        t.EndsWith(":", StringComparison.Ordinal) &&
-        !t.StartsWith("-", StringComparison.Ordinal) &&
-        !t.StartsWith("#", StringComparison.Ordinal) &&
-        !IsTreeLine(t) &&
-        t.Length <= 80;
-
     private static bool TryBuildUrlLine(string t, MediaBrush muted, out UIElement line)
     {
         line = null!;
@@ -746,7 +783,9 @@ public partial class InfoTab : UserControl
         return true;
     }
 
-    /// <summary>Renders simple markdown inline syntax: `code` (shown as 'code' in this UI) and [title](url).</summary>
+    /// <summary>
+    /// Renders a small markdown-like subset: backtick code (shown as single-quoted), **bold**, *italic*, [label](url), plus parenthetical italics in <see cref="AddBracketAwareRuns"/>.
+    /// </summary>
     private static void AppendMarkdownInlines(
         InlineCollection inlines,
         string segment,
@@ -776,77 +815,96 @@ public partial class InfoTab : UserControl
         {
             var linkMatch = MarkdownLinkRegex.Match(segment, idx);
             var codeMatch = InlineCodeRegex.Match(segment, idx);
+            var boldMatch = BoldRegex.Match(segment, idx);
+            var italicMatch = ItalicAsteriskRegex.Match(segment, idx);
 
-            var hasLink = linkMatch.Success;
-            var hasCode = codeMatch.Success;
+            Match? next = null;
+            var kind = MdInlineKind.Link;
+            var bestPos = int.MaxValue;
 
-            if (!hasLink && !hasCode)
+            void Consider(MdInlineKind k, Match m)
+            {
+                if (!m.Success || m.Index < idx)
+                    return;
+                if (m.Index < bestPos || (m.Index == bestPos && next is not null && m.Length > next.Length))
+                {
+                    bestPos = m.Index;
+                    next = m;
+                    kind = k;
+                }
+            }
+
+            Consider(MdInlineKind.Link, linkMatch);
+            Consider(MdInlineKind.Code, codeMatch);
+            Consider(MdInlineKind.Bold, boldMatch);
+            Consider(MdInlineKind.Italic, italicMatch);
+
+            if (next is null)
             {
                 AddBracketAwareRuns(inlines, segment[idx..], defaultFg);
                 break;
             }
 
-            Match next;
-            var isLink = false;
-            if (hasLink && hasCode)
-            {
-                if (linkMatch.Index <= codeMatch.Index)
-                {
-                    next = linkMatch;
-                    isLink = true;
-                }
-                else
-                {
-                    next = codeMatch;
-                }
-            }
-            else if (hasLink)
-            {
-                next = linkMatch;
-                isLink = true;
-            }
-            else
-            {
-                next = codeMatch;
-            }
-
             if (next.Index > idx)
                 AddBracketAwareRuns(inlines, segment.Substring(idx, next.Index - idx), defaultFg);
 
-            if (isLink)
+            switch (kind)
             {
-                var label = next.Groups["text"].Value;
-                var url = next.Groups["url"].Value;
-                if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                case MdInlineKind.Link:
                 {
-                    var linkColor = (MediaBrush?)Application.Current?.TryFindResource("Brush.AccentBlueViolet")
-                        ?? new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x7B, 0x7F, 0xD8));
-                    var hl = new Hyperlink { Foreground = linkColor, NavigateUri = uri };
-                    AddBracketAwareRuns(hl.Inlines, label, linkColor);
-                    hl.RequestNavigate += (_, e) =>
+                    var label = next.Groups["text"].Value;
+                    var url = next.Groups["url"].Value;
+                    if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
                     {
-                        try
+                        var linkColor = (MediaBrush?)Application.Current?.TryFindResource("Brush.AccentBlueViolet")
+                            ?? new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x7B, 0x7F, 0xD8));
+                        var hl = new Hyperlink { Foreground = linkColor, NavigateUri = uri };
+                        AppendMarkdownInlines(hl.Inlines, label, linkColor, treatNewlines: false);
+                        hl.RequestNavigate += (_, e) =>
                         {
-                            Process.Start(new ProcessStartInfo { FileName = e.Uri.AbsoluteUri, UseShellExecute = true });
-                        }
-                        catch
-                        {
-                            // ignore
-                        }
-                        e.Handled = true;
-                    };
-                    inlines.Add(hl);
+                            try
+                            {
+                                Process.Start(new ProcessStartInfo { FileName = e.Uri.AbsoluteUri, UseShellExecute = true });
+                            }
+                            catch
+                            {
+                                // ignore
+                            }
+
+                            e.Handled = true;
+                        };
+                        inlines.Add(hl);
+                    }
+                    else
+                    {
+                        AddBracketAwareRuns(inlines, next.Value, defaultFg);
+                    }
+
+                    break;
                 }
-                else
+                case MdInlineKind.Code:
                 {
-                    AddBracketAwareRuns(inlines, next.Value, defaultFg);
+                    // info-page.md uses backticks for paths/names; show them as visible single-quoted text in the Info UI only.
+                    var inner = next.Groups[1].Value;
+                    inlines.Add(new Run("'" + inner + "'") { Foreground = defaultFg });
+                    break;
                 }
-            }
-            else
-            {
-                // About-section uses backticks for paths/names; show them as visible single-quoted text in the Info UI only.
-                var inner = next.Groups[1].Value;
-                inlines.Add(new Run("'" + inner + "'") { Foreground = defaultFg });
+                case MdInlineKind.Bold:
+                {
+                    var innerBold = next.Groups[1].Value;
+                    var span = new Span { FontWeight = FontWeights.Bold };
+                    AppendMarkdownInlines(span.Inlines, innerBold, defaultFg, treatNewlines: false);
+                    inlines.Add(span);
+                    break;
+                }
+                case MdInlineKind.Italic:
+                {
+                    var innerIt = next.Groups[1].Value;
+                    var span = new Span { FontStyle = FontStyles.Italic };
+                    AppendMarkdownInlines(span.Inlines, innerIt, defaultFg, treatNewlines: false);
+                    inlines.Add(span);
+                    break;
+                }
             }
 
             idx = next.Index + next.Length;
