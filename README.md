@@ -58,8 +58,7 @@ For full install options info see **[install-options-guide.md](docs/install-opti
 
     dotnet build Ordir.sln -c Release
 
-#### Full Instructions:  
-**[install-options-guide.md](docs/install-options-guide.md#build)**
+**[More Build Info Here](docs/install-options-guide.md#build)**
 
 ---
 
