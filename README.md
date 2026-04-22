@@ -37,7 +37,7 @@ For full install options info see **[install-options-guide.md](docs/install-opti
 
 ### 1. Installer 
 
-- Download and run the installer `ordir-setup.exe` from **Releases**, it will create a folder in `Program Files` & `Appdata\Local` 
+- Download and run the installer `ordir-setup.exe` from **[Releases](https://github.com/landnthrn/ordir/releases/tag/2.0.0)**, it will create a folder in `Program Files` & `Appdata\Local` 
 
 - If you want to use **[quick launch](#quick-launch-from-any-folder)**, check `Install 'ordir' command to user PATH` during install
 
