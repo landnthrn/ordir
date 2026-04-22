@@ -1,4 +1,4 @@
-# Install or build Ordir
+# Install or Build Ordir
 
 Single reference for **installing** (installer, portable zip, publish folders) and **building** from this repo.
 
