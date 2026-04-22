@@ -5,7 +5,7 @@
 
 # Ordir
 
-A handy Windows app for quickly organizing File Explorer folders in any order you please. Say goodbye to the gut-wrenching mess of folder name ordering by A–Z or numbers.
+A handy Windows app for quickly organizing File Explorer folders in any order you please. Say goodbye to the gut-wrenching mess of folder name ordering by A–Z or numbers. Adds the ability for custom folder thumbnails as well.
 
 Your configuration transfers wherever you move an organized folder, even to other drives. Save a custom setup or for bulk operations export lists, feed them to an AI to organize, import a revised list, and apply!
 
