@@ -114,8 +114,7 @@ It's recommended to apply the following cache tweak before setting custom thumbn
 After applying a tweak, restart **Windows Explorer** from Task Manager.
 
 ### Strong Tip:
-To avoid set image paths breaking, only set thumbnails to image files that you don't ever plan on moving, or renaming.   
-You could make a thumbnail bin just for this to make it easy.
+To avoid set image paths breaking, only set thumbnails to image files that you don't ever plan on moving, or renaming. You could make a thumbnail bin just for this to make it easy.
 
 ---
 
