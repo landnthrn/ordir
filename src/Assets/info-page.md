@@ -8,7 +8,7 @@ If Ordir helps your workflow, supporting me helps for future updates and more de
 
 # About:
 
-A handy Windows app for quickly organizing File Explorer folders in any order you please! Say goodbye to the gut-wrenching mess of foldername ordering by a-z or numbers.  Adds ability for custom folder thumbnails as well. 
+Finally have the freedom to organize/order folders any way you want in Windows File Explorer, and add custom thumbnails. Say goodbye to the gut-wrenching mess of foldername ordering by A–Z or numbers, and order limitations in general.
 
 Your configuration transfers wherever you move a organized folder, even to other drives. Save custom setups, or for bulk operations export lists, feed to AI to organize, import revised list, and apply!
 

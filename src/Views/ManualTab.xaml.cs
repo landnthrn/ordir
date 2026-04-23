@@ -773,6 +773,8 @@ public partial class ManualTab : UserControl
         ManualLastRunSummaryBlock.Text = string.Empty;
         AppendLog(ActivityRequestLog.FormatRequestLine(parent, $"> apply order {DateTime.Now:HH:mm:ss}"));
 
+        ManualRestartExplorerBtn.IsEnabled = false;
+        ManualApplyOrderBtn.IsEnabled = false;
         try
         {
             ApplyOrganizeService.ApplyResult result;
@@ -813,6 +815,41 @@ public partial class ManualTab : UserControl
         catch (Exception ex)
         {
             AppendLogError($"! {ex.Message}");
+        }
+        finally
+        {
+            ManualRestartExplorerBtn.IsEnabled = true;
+            ManualApplyOrderBtn.IsEnabled = true;
+        }
+    }
+
+    private async void ManualRestartExplorerBtn_Click(object sender, RoutedEventArgs e)
+    {
+        var raw = ManualPathBox.Text.Trim();
+        string? openAfter = null;
+        if (!string.IsNullOrWhiteSpace(raw) && Directory.Exists(raw))
+            openAfter = Path.GetFullPath(raw);
+
+        ManualRestartExplorerBtn.IsEnabled = false;
+        ManualApplyOrderBtn.IsEnabled = false;
+        try
+        {
+            AppendLog(openAfter != null
+                ? "> Restart Explorer (will open target folder when done)…"
+                : "> Restart Explorer…");
+            await WindowsExplorerRestartService.RestartAsync(openAfter).ConfigureAwait(true);
+            AppendLog(openAfter != null
+                ? "> Explorer restarted; opened target folder in File Explorer."
+                : "> Explorer restarted.");
+        }
+        catch (Exception ex)
+        {
+            AppendLogError($"! Explorer restart failed: {ex.Message}");
+        }
+        finally
+        {
+            ManualRestartExplorerBtn.IsEnabled = true;
+            ManualApplyOrderBtn.IsEnabled = true;
         }
     }
 

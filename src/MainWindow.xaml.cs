@@ -1012,6 +1012,7 @@ public partial class MainWindow : Window
         }
 
         ApplyBtn.IsEnabled = false;
+        RestartExplorerBtn.IsEnabled = false;
         RefreshBtn.IsEnabled = false;
         BrowseBtn.IsEnabled = false;
         ClearActivityLogDocument();
@@ -1063,6 +1064,41 @@ public partial class MainWindow : Window
         }
         finally
         {
+            ApplyBtn.IsEnabled = true;
+            RestartExplorerBtn.IsEnabled = true;
+            RefreshBtn.IsEnabled = true;
+            BrowseBtn.IsEnabled = true;
+        }
+    }
+
+    private async void RestartExplorerBtn_Click(object sender, RoutedEventArgs e)
+    {
+        var raw = PathBox.Text.Trim();
+        string? openAfter = null;
+        if (!string.IsNullOrWhiteSpace(raw) && Directory.Exists(raw))
+            openAfter = Path.GetFullPath(raw);
+
+        RestartExplorerBtn.IsEnabled = false;
+        ApplyBtn.IsEnabled = false;
+        RefreshBtn.IsEnabled = false;
+        BrowseBtn.IsEnabled = false;
+        try
+        {
+            AppendLog(openAfter != null
+                ? $"> Restart Explorer (will open target folder when done)…"
+                : "> Restart Explorer…");
+            await WindowsExplorerRestartService.RestartAsync(openAfter).ConfigureAwait(true);
+            AppendLog(openAfter != null
+                ? "> Explorer restarted; opened target folder in File Explorer."
+                : "> Explorer restarted.");
+        }
+        catch (Exception ex)
+        {
+            AppendLogError($"! Explorer restart failed: {ex.Message}");
+        }
+        finally
+        {
+            RestartExplorerBtn.IsEnabled = true;
             ApplyBtn.IsEnabled = true;
             RefreshBtn.IsEnabled = true;
             BrowseBtn.IsEnabled = true;

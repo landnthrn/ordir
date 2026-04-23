@@ -390,9 +390,9 @@
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="10,0,0,0">
                   <TextBlock Text="See Changes" FontWeight="SemiBold" Foreground="{StaticResource Brush.SectionTitle}" Margin="0,0,0,4"/>
-                  <TextBox TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource Brush.Muted}" Margin="0,0,0,0" MinHeight="120"
-                           IsReadOnly="True" IsTabStop="False" BorderThickness="0" Background="Transparent" Padding="0" Cursor="IBeam"
-                           Text="In File Explorer of Folder:&#x0a;- Right click empty space &gt; Sort by &gt; More... (If on Windows 11, use Show more options)&#x0a;- Check Comments&#x0a;- Right click empty space &gt; Sort by &gt; Comments&#x0a;- Right click &gt; Refresh&#x0a;&#x0a;If you don't see changes:&#x0a;- Open Task Manager&#x0a;- Right click the task Windows Explorer &gt; Restart"/>
+                  <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource Brush.Muted}" Margin="0,0,0,0" MinHeight="120" Cursor="IBeam">
+                    <Run FontWeight="Bold" Foreground="{StaticResource Brush.Muted}">In File Explorer of Folder:</Run><Run xml:space="preserve" Foreground="{StaticResource Brush.Muted}">&#x0a;- Right click empty space &gt; Sort by &gt; More... (If on Windows 11, use Show more options)&#x0a;- Check Comments&#x0a;- Right click empty space &gt; Sort by &gt; Comments&#x0a;- Right click &gt; Refresh&#x0a;&#x0a;If you don't see changes use the&#x0a;'Restart Explorer' button below</Run>
+                  </TextBlock>
                 </StackPanel>
               </Grid>
               <StackPanel Grid.Row="1" Margin="0,0,0,12">
@@ -442,9 +442,12 @@
         </Grid>
 
         <DockPanel Grid.Row="4" LastChildFill="True" Margin="0,10,0,0" VerticalAlignment="Bottom">
-          <Button x:Name="ApplyBtn" DockPanel.Dock="Right" Content="Apply order" Padding="20,10" FontSize="13" FontWeight="SemiBold"
-                  VerticalAlignment="Bottom" Margin="14,0,0,0"
-                  Style="{StaticResource OrdirPrimaryButton}" Click="ApplyBtn_Click"/>
+          <StackPanel DockPanel.Dock="Right" Orientation="Vertical" VerticalAlignment="Bottom" Margin="14,0,0,0">
+            <Button x:Name="RestartExplorerBtn" Content="Restart Explorer" Padding="20,10" FontSize="13" FontWeight="SemiBold"
+                    Margin="0,0,0,8" Style="{StaticResource OrdirPrimaryButton}" Click="RestartExplorerBtn_Click"/>
+            <Button x:Name="ApplyBtn" Content="Apply order" Padding="20,10" FontSize="13" FontWeight="SemiBold"
+                    Style="{StaticResource OrdirPrimaryButton}" Click="ApplyBtn_Click"/>
+          </StackPanel>
           <Border Style="{StaticResource OrdirActivityLogHost}" Background="#11111b" BorderBrush="{StaticResource Brush.Border}" BorderThickness="1" CornerRadius="4">
             <DockPanel LastChildFill="True">
               <TextBox x:Name="LastRunSummaryBlock" DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="{StaticResource Brush.Muted}" FontSize="11" Margin="6,6,6,4"
