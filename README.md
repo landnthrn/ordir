@@ -115,6 +115,13 @@ To avoid set image paths breaking, only set thumbnails to image files that you d
 
 ---
 
+## See Also
+### [Mouzi](https://github.com/hsr88/mouzi)
+For automatic file sorting into folders, be sure to check out Mouzi.  
+A privacy-first system tray app that organizes files as they arrive.
+
+---
+
 ## Found this useful?<img src="https://media.tenor.com/23NitOvEEkMAAAAj/optical-illusion-rotating-head.gif" width="30"><br>
 
 If Ordir helps your workflow, supporting me helps for future updates and more desktop tools, or just leave a star on repo :)
